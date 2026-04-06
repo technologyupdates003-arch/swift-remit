@@ -14,16 +14,370 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      exchange_rates: {
+        Row: {
+          from_currency: string
+          id: string
+          rate: number
+          to_currency: string
+          updated_at: string
+        }
+        Insert: {
+          from_currency: string
+          id?: string
+          rate: number
+          to_currency: string
+          updated_at?: string
+        }
+        Update: {
+          from_currency?: string
+          id?: string
+          rate?: number
+          to_currency?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      kyc_documents: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          document_type: string
+          file_url: string
+          id: string
+          status: Database["public"]["Enums"]["kyc_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          document_type: string
+          file_url: string
+          id?: string
+          status?: Database["public"]["Enums"]["kyc_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          document_type?: string
+          file_url?: string
+          id?: string
+          status?: Database["public"]["Enums"]["kyc_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read_status: boolean
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read_status?: boolean
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read_status?: boolean
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      otp_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          purpose: string
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          purpose?: string
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          purpose?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          confirmations: number | null
+          created_at: string
+          currency: string
+          fee: number
+          id: string
+          network: string | null
+          receiver_user_id: string | null
+          receiver_wallet_id: string | null
+          reference: string
+          sender_user_id: string | null
+          sender_wallet_id: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          tx_hash: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          confirmations?: number | null
+          created_at?: string
+          currency: string
+          fee?: number
+          id?: string
+          network?: string | null
+          receiver_user_id?: string | null
+          receiver_wallet_id?: string | null
+          reference?: string
+          sender_user_id?: string | null
+          sender_wallet_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          tx_hash?: string | null
+          type: Database["public"]["Enums"]["transaction_type"]
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          confirmations?: number | null
+          created_at?: string
+          currency?: string
+          fee?: number
+          id?: string
+          network?: string | null
+          receiver_user_id?: string | null
+          receiver_wallet_id?: string | null
+          reference?: string
+          sender_user_id?: string | null
+          sender_wallet_id?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          tx_hash?: string | null
+          type?: Database["public"]["Enums"]["transaction_type"]
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_receiver_user_id_fkey"
+            columns: ["receiver_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_receiver_wallet_id_fkey"
+            columns: ["receiver_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_sender_user_id_fkey"
+            columns: ["sender_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_sender_wallet_id_fkey"
+            columns: ["sender_wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          failed_pin_attempts: number
+          full_name: string | null
+          id: string
+          is_admin: boolean
+          kyc_status: Database["public"]["Enums"]["kyc_status"]
+          phone: string
+          pin_hash: string | null
+          pin_locked_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failed_pin_attempts?: number
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          phone: string
+          pin_hash?: string | null
+          pin_locked_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failed_pin_attempts?: number
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          phone?: string
+          pin_hash?: string | null
+          pin_locked_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          type: Database["public"]["Enums"]["wallet_type"]
+          updated_at: string
+          user_id: string
+          wallet_address: string | null
+          wallet_number: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency: string
+          id?: string
+          status?: string
+          type?: Database["public"]["Enums"]["wallet_type"]
+          updated_at?: string
+          user_id: string
+          wallet_address?: string | null
+          wallet_number: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+          type?: Database["public"]["Enums"]["wallet_type"]
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string | null
+          wallet_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      kyc_status: "pending" | "approved" | "rejected" | "not_submitted"
+      transaction_status: "pending" | "completed" | "failed" | "cancelled"
+      transaction_type: "deposit" | "withdrawal" | "transfer" | "exchange"
+      wallet_type: "fiat" | "crypto"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +504,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      kyc_status: ["pending", "approved", "rejected", "not_submitted"],
+      transaction_status: ["pending", "completed", "failed", "cancelled"],
+      transaction_type: ["deposit", "withdrawal", "transfer", "exchange"],
+      wallet_type: ["fiat", "crypto"],
+    },
   },
 } as const
