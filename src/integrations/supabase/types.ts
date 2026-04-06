@@ -275,37 +275,43 @@ export type Database = {
       }
       users: {
         Row: {
+          auth_user_id: string | null
           created_at: string
+          email: string | null
           failed_pin_attempts: number
           full_name: string | null
           id: string
           is_admin: boolean
           kyc_status: Database["public"]["Enums"]["kyc_status"]
-          phone: string
+          phone: string | null
           pin_hash: string | null
           pin_locked_until: string | null
           updated_at: string
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
+          email?: string | null
           failed_pin_attempts?: number
           full_name?: string | null
           id?: string
           is_admin?: boolean
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
-          phone: string
+          phone?: string | null
           pin_hash?: string | null
           pin_locked_until?: string | null
           updated_at?: string
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
+          email?: string | null
           failed_pin_attempts?: number
           full_name?: string | null
           id?: string
           is_admin?: boolean
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
-          phone?: string
+          phone?: string | null
           pin_hash?: string | null
           pin_locked_until?: string | null
           updated_at?: string
@@ -364,6 +370,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_id_from_auth: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
