@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
-interface User {
+interface AppUser {
   id: string;
-  phone: string;
+  auth_user_id: string;
+  phone: string | null;
+  email: string | null;
   full_name: string | null;
   is_admin: boolean;
   kyc_status: string;
@@ -12,12 +15,13 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
+  session: Session | null;
   loading: boolean;
-  login: (phone: string) => Promise<{ success: boolean; message: string }>;
-  verifyOtp: (phone: string, code: string) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
-  setUser: (user: User | null) => void;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ success: boolean; message: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  logout: () => Promise<void>;
+  setUser: (user: AppUser | null) => void;
   refreshUser: () => Promise<void>;
 }
 
@@ -30,61 +34,110 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUser = useCallback(async () => {
-    const stored = localStorage.getItem('abanremit_user');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setUser(parsed);
-      } catch {
-        localStorage.removeItem('abanremit_user');
-      }
-    }
-    setLoading(false);
+  const fetchAppUser = useCallback(async (authUserId: string) => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('auth_user_id', authUserId)
+      .maybeSingle();
+    return data as AppUser | null;
   }, []);
 
   useEffect(() => {
-    refreshUser();
-  }, [refreshUser]);
-
-  const login = async (phone: string): Promise<{ success: boolean; message: string }> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('send-otp', {
-        body: { phone },
-      });
-      if (error) return { success: false, message: error.message };
-      return data;
-    } catch (e: any) {
-      return { success: false, message: e.message || 'Failed to send OTP' };
-    }
-  };
-
-  const verifyOtp = async (phone: string, code: string): Promise<{ success: boolean; message: string }> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-otp', {
-        body: { phone, code },
-      });
-      if (error) return { success: false, message: error.message };
-      if (data?.success && data?.user) {
-        setUser(data.user);
-        localStorage.setItem('abanremit_user', JSON.stringify(data.user));
+    // Set up auth listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sess) => {
+      setSession(sess);
+      if (sess?.user) {
+        // Use setTimeout to avoid Supabase auth deadlock
+        setTimeout(async () => {
+          const appUser = await fetchAppUser(sess.user.id);
+          setUser(appUser);
+          setLoading(false);
+        }, 0);
+      } else {
+        setUser(null);
+        setLoading(false);
       }
-      return data;
+    });
+
+    // Then check existing session
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess);
+      if (sess?.user) {
+        fetchAppUser(sess.user.id).then(appUser => {
+          setUser(appUser);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchAppUser]);
+
+  const signUp = async (email: string, password: string, fullName: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: fullName },
+        },
+      });
+
+      if (error) return { success: false, message: error.message };
+
+      if (data.user) {
+        // Create app user profile
+        await supabase.from('users').insert({
+          auth_user_id: data.user.id,
+          email,
+          full_name: fullName,
+        });
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        return { success: true, message: 'Please check your email to verify your account.' };
+      }
+
+      return { success: true, message: 'Account created successfully!' };
     } catch (e: any) {
-      return { success: false, message: e.message || 'Failed to verify OTP' };
+      return { success: false, message: e.message || 'Signup failed' };
     }
   };
 
-  const logout = () => {
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { success: false, message: error.message };
+      return { success: true, message: 'Logged in!' };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Login failed' };
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('abanremit_user');
+    setSession(null);
+  };
+
+  const refreshUser = async () => {
+    if (session?.user) {
+      const appUser = await fetchAppUser(session.user.id);
+      setUser(appUser);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, verifyOtp, logout, setUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, logout, setUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
