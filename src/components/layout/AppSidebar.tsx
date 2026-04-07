@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, Banknote
+  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, ArrowUpFromLine
 } from 'lucide-react';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Wallet, label: 'My Wallets', path: '/wallets' },
   { icon: Send, label: 'Send Money', path: '/send' },
+  { icon: ArrowUpFromLine, label: 'Withdraw', path: '/withdraw' },
   { icon: Clock, label: 'Transactions', path: '/transactions' },
   { icon: Globe, label: 'Exchange', path: '/exchange' },
   { icon: Bitcoin, label: 'AbanRemit Crypto', path: '/crypto' },
