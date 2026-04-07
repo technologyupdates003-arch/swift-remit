@@ -17,6 +17,7 @@ import KycPage from "@/pages/KycPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import WithdrawPage from "@/pages/WithdrawPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const AppRoutes = () => (
       <Route index element={<Dashboard />} />
       <Route path="wallets" element={<WalletsPage />} />
       <Route path="send" element={<SendMoneyPage />} />
+      <Route path="withdraw" element={<WithdrawPage />} />
       <Route path="transactions" element={<TransactionsPage />} />
       <Route path="exchange" element={<ExchangePage />} />
       <Route path="crypto" element={<CryptoPage />} />

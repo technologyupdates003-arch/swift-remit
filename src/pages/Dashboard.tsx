@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, EyeOff, TrendingUp, Send, Download, Globe, Bitcoin } from 'lucide-react';
+import { Eye, EyeOff, TrendingUp, Send, Download, Globe, Bitcoin, ArrowUpFromLine } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Wallet {
@@ -52,6 +52,7 @@ const Dashboard = () => {
 
   const actions = [
     { icon: Send, label: 'Send Money', path: '/send', bg: 'bg-secondary' },
+    { icon: ArrowUpFromLine, label: 'Withdraw', path: '/withdraw', bg: 'bg-secondary' },
     { icon: Download, label: 'Fund Wallet', path: '/wallets', bg: 'bg-secondary' },
     { icon: Globe, label: 'Exchange', path: '/exchange', bg: 'bg-secondary' },
     { icon: Bitcoin, label: 'Crypto', path: '/crypto', bg: 'bg-secondary' },
