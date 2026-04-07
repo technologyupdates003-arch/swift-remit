@@ -39,46 +39,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   const fetchAppUser = useCallback(async (authUserId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('auth_user_id', authUserId)
       .maybeSingle();
+
+    if (error) {
+      console.error('Failed to fetch app user', error);
+      return null;
+    }
+
     return data as AppUser | null;
   }, []);
 
+  const ensureAppUser = useCallback(async (authUser: SupabaseUser) => {
+    const existingUser = await fetchAppUser(authUser.id);
+    if (existingUser) return existingUser;
+
+    const fullName = typeof authUser.user_metadata?.full_name === 'string'
+      ? authUser.user_metadata.full_name
+      : null;
+
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        auth_user_id: authUser.id,
+        email: authUser.email ?? null,
+        full_name: fullName,
+      })
+      .select('*')
+      .single();
+
+    if (error) {
+      const recoveredUser = await fetchAppUser(authUser.id);
+      if (recoveredUser) return recoveredUser;
+
+      console.error('Failed to create app user', error);
+      return null;
+    }
+
+    return data as AppUser;
+  }, [fetchAppUser]);
+
+  const syncSessionUser = useCallback(async (sess: Session | null) => {
+    setSession(sess);
+
+    if (!sess?.user) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const appUser = await ensureAppUser(sess.user);
+      setUser(appUser);
+    } catch (error) {
+      console.error('Failed to sync authenticated user', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [ensureAppUser]);
+
   useEffect(() => {
     // Set up auth listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, sess) => {
-      setSession(sess);
-      if (sess?.user) {
-        // Use setTimeout to avoid Supabase auth deadlock
-        setTimeout(async () => {
-          const appUser = await fetchAppUser(sess.user.id);
-          setUser(appUser);
-          setLoading(false);
-        }, 0);
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      // Use setTimeout to avoid Supabase auth deadlock
+      setTimeout(() => {
+        void syncSessionUser(sess);
+      }, 0);
     });
 
     // Then check existing session
     supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      if (sess?.user) {
-        fetchAppUser(sess.user.id).then(appUser => {
-          setUser(appUser);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
+      void syncSessionUser(sess);
     });
 
     return () => subscription.unsubscribe();
-  }, [fetchAppUser]);
+  }, [syncSessionUser]);
 
   const signUp = async (email: string, password: string, fullName: string): Promise<{ success: boolean; message: string }> => {
     try {
@@ -93,13 +132,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) return { success: false, message: error.message };
 
-      if (data.user) {
-        // Create app user profile
-        await supabase.from('users').insert({
-          auth_user_id: data.user.id,
-          email,
-          full_name: fullName,
-        });
+      if (data.user && data.session) {
+        const appUser = await ensureAppUser(data.user);
+        if (!appUser) {
+          return {
+            success: false,
+            message: 'Account created, but profile setup failed. Please try signing in again.',
+          };
+        }
       }
 
       // Check if email confirmation is required
@@ -131,7 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     if (session?.user) {
-      const appUser = await fetchAppUser(session.user.id);
+      const appUser = await ensureAppUser(session.user);
       setUser(appUser);
     }
   };
