@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, ArrowUpFromLine
+  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, ArrowUpFromLine, Banknote
 } from 'lucide-react';
 
 const navItems = [
