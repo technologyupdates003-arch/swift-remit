@@ -82,10 +82,19 @@ const BankAccountManager = ({ onAccountSelect, selectedAccountId }: BankAccountM
   const fetchAccounts = async () => {
     if (!user) return;
     
+    // Get internal user ID
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!userData) { setLoading(false); return; }
+
     const { data, error } = await supabase
-      .from('bank_accounts')
+      .from('bank_accounts' as any)
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userData.id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -95,7 +104,7 @@ const BankAccountManager = ({ onAccountSelect, selectedAccountId }: BankAccountM
         variant: 'destructive',
       });
     } else {
-      setAccounts(data || []);
+      setAccounts((data as any) || []);
     }
     setLoading(false);
   };
@@ -172,18 +181,27 @@ const BankAccountManager = ({ onAccountSelect, selectedAccountId }: BankAccountM
     try {
       const selectedBank = banks.find(b => b.code === formData.bank_code);
       
+      // Get internal user ID
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', user?.id)
+        .single();
+
+      if (!userData) throw new Error('User profile not found');
+
       const { error } = await supabase
-        .from('bank_accounts')
+        .from('bank_accounts' as any)
         .insert({
-          user_id: user?.id,
+          user_id: userData.id,
           account_name: formData.account_name,
           account_number: formData.account_number,
           bank_code: formData.bank_code,
           bank_name: selectedBank?.name || '',
           currency: 'NGN',
           is_verified: true,
-          is_default: accounts.length === 0, // First account is default
-        });
+          is_default: accounts.length === 0,
+        } as any);
 
       if (error) throw error;
 
@@ -214,7 +232,7 @@ const BankAccountManager = ({ onAccountSelect, selectedAccountId }: BankAccountM
   const deleteAccount = async (accountId: string) => {
     try {
       const { error } = await supabase
-        .from('bank_accounts')
+        .from('bank_accounts' as any)
         .delete()
         .eq('id', accountId);
 
