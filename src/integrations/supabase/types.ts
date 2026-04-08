@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at: string
+          currency: string
+          id: string
+          is_default: boolean
+          is_verified: boolean
+          paystack_recipient_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          paystack_recipient_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_code?: string
+          bank_name?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          paystack_recipient_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       commission_config: {
         Row: {
           commission_rate: number
