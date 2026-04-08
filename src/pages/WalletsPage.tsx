@@ -45,7 +45,9 @@ const WalletsPage = () => {
 
   const fetchWallets = async () => {
     if (!user) return;
-    const { data } = await supabase.from('wallets').select('*').eq('user_id', user.id).order('created_at', { ascending: true });
+    const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+    if (!userId) { setLoading(false); return; }
+    const { data } = await supabase.from('wallets').select('*').eq('user_id', userId).order('created_at', { ascending: true });
     setWallets(data || []);
     setLoading(false);
   };

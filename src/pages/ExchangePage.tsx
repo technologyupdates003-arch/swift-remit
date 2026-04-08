@@ -32,8 +32,15 @@ const ExchangePage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('wallets').select('*').eq('user_id', user.id).then(({ data }) => setWallets(data || []));
-    supabase.from('exchange_rates').select('*').then(({ data }) => setRates(data || []));
+    const load = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (userId) {
+        const { data } = await supabase.from('wallets').select('*').eq('user_id', userId);
+        setWallets(data || []);
+      }
+      supabase.from('exchange_rates').select('*').then(({ data }) => setRates(data || []));
+    };
+    load();
   }, [user]);
 
   const fromW = wallets.find(w => w.id === fromWallet);
@@ -53,7 +60,11 @@ const ExchangePage = () => {
     } else {
       toast({ title: 'Exchange successful!' });
       setAmount('');
-      supabase.from('wallets').select('*').eq('user_id', user.id).then(({ data }) => setWallets(data || []));
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (userId) {
+        const { data } = await supabase.from('wallets').select('*').eq('user_id', userId);
+        setWallets(data || []);
+      }
     }
   };
 
