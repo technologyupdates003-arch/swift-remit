@@ -62,12 +62,20 @@ const WalletsPage = () => {
       return;
     }
     setCreating(true);
+
+    const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+    if (!userId) {
+      toast({ title: 'User profile not found', variant: 'destructive' });
+      setCreating(false);
+      return;
+    }
+
     const currencyInfo = currencies.find(c => c.value === selectedCurrency);
     const walletNumber = `WLT-${selectedCurrency}-${Date.now()}`;
     const walletAddress = currencyInfo?.type === 'crypto' ? `0x${Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` : null;
 
     const { error } = await supabase.from('wallets').insert({
-      user_id: user.id,
+      user_id: userId,
       currency: selectedCurrency,
       wallet_number: walletNumber,
       type: currencyInfo?.type === 'crypto' ? 'crypto' : 'fiat',
