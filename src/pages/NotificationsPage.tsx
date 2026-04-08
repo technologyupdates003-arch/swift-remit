@@ -18,11 +18,16 @@ const NotificationsPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('notifications').select('*').eq('user_id', user.id)
-      .order('created_at', { ascending: false }).then(({ data }) => {
+    const load = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (userId) {
+        const { data } = await supabase.from('notifications').select('*').eq('user_id', userId)
+          .order('created_at', { ascending: false });
         setNotifications(data || []);
-        setLoading(false);
-      });
+      }
+      setLoading(false);
+    };
+    load();
   }, [user]);
 
   const markRead = async (id: string) => {
