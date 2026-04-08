@@ -1,0 +1,114 @@
+/* Card Payment Form Styles */
+.card-input {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.card-number-input {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.card-preview {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-preview::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.card-chip {
+  width: 32px;
+  height: 24px;
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.card-number {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+
+.card-holder {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-expiry {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+}
+
+.payment-security-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 6px;
+  color: rgb(34, 197, 94);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.payment-method-card {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.payment-method-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-card.selected {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.card-type-visa {
+  color: #1a1f71;
+}
+
+.card-type-mastercard {
+  color: #eb001b;
+}
+
+.card-type-verve {
+  color: #00a651;
+}
+
+.card-type-amex {
+  color: #006fcf;
+}

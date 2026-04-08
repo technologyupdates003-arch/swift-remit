@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
@@ -10,6 +10,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
+import PaystackPayment from '@/components/PaystackPayment';
 
 interface Wallet {
   id: string;
@@ -39,6 +40,8 @@ const WalletsPage = () => {
   const [creating, setCreating] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
 
   const fetchWallets = async () => {
     if (!user) return;
@@ -83,6 +86,21 @@ const WalletsPage = () => {
   const formatBalance = (amount: number, currency: string) => {
     const symbols: Record<string, string> = { KES: 'KSh', USD: '$', EUR: '€', BTC: '₿', ETH: 'Ξ', USDT: '$' };
     return `${symbols[currency] || ''}${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: currency === 'BTC' ? 6 : 2 })}`;
+  };
+
+  const handleFundWallet = (wallet: Wallet) => {
+    setSelectedWallet(wallet);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setPaymentDialogOpen(false);
+    setSelectedWallet(null);
+    fetchWallets(); // Refresh wallet balances
+    toast({
+      title: 'Payment Successful',
+      description: 'Your wallet has been funded successfully',
+    });
   };
 
   return (
@@ -143,12 +161,32 @@ const WalletsPage = () => {
                   {wallet.wallet_address.slice(0, 8)}...{wallet.wallet_address.slice(-6)}
                 </p>
               )}
-              <Button className="w-full" onClick={() => {}}>
-                Fund Wallet
-              </Button>
+              {wallet.type === 'crypto' ? (
+                <Button className="w-full" variant="outline" disabled>
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Crypto Deposit (Coming Soon)
+                </Button>
+              ) : (
+                <Button className="w-full" onClick={() => handleFundWallet(wallet)}>
+                  <Wallet className="w-4 h-4 mr-2" />
+                  Fund Wallet
+                </Button>
+              )}
             </div>
           ))}
         </div>
+      )}
+
+      {selectedWallet && (
+        <PaystackPayment
+          wallet={selectedWallet}
+          isOpen={paymentDialogOpen}
+          onClose={() => {
+            setPaymentDialogOpen(false);
+            setSelectedWallet(null);
+          }}
+          onSuccess={handlePaymentSuccess}
+        />
       )}
     </div>
   );

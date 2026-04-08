@@ -18,6 +18,7 @@ import NotificationsPage from "@/pages/NotificationsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import WithdrawPage from "@/pages/WithdrawPage";
+import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
     <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+    <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
     <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route index element={<Dashboard />} />
       <Route path="wallets" element={<WalletsPage />} />

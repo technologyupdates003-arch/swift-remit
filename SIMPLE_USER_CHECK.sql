@@ -1,0 +1,1 @@
+SELECT id, email, full_name FROM public.users ORDER BY created_at DESC;

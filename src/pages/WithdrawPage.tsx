@@ -8,6 +8,7 @@ import { CheckCircle, Smartphone, Building2, Wallet, ArrowLeft } from 'lucide-re
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
+import WithdrawToBankComponent from '@/components/WithdrawToBankComponent';
 
 interface WalletData {
   id: string;
@@ -30,6 +31,7 @@ const WithdrawPage = () => {
   const [amount, setAmount] = useState('');
   const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
+  const [bankWithdrawOpen, setBankWithdrawOpen] = useState(false);
 
   // M-Pesa fields
   const [mpesaPhone, setMpesaPhone] = useState('');
@@ -55,7 +57,7 @@ const WithdrawPage = () => {
 
   const methodOptions = [
     { key: 'mpesa' as const, icon: Smartphone, label: 'M-Pesa', desc: 'Withdraw to phone number' },
-    { key: 'bank' as const, icon: Building2, label: 'Bank Transfer', desc: 'Withdraw to bank account' },
+    { key: 'bank' as const, icon: Building2, label: 'Bank Transfer', desc: 'Withdraw to bank account (NGN only)' },
     { key: 'wallet' as const, icon: Wallet, label: 'To Wallet', desc: 'Transfer to another wallet' },
   ];
 
@@ -131,6 +133,23 @@ const WithdrawPage = () => {
     setAccountNumber('');
     setAccountName('');
     setRecipientWalletId('');
+    setBankWithdrawOpen(false);
+  };
+
+  const handleMethodSelect = (methodKey: WithdrawMethod) => {
+    if (methodKey === 'bank') {
+      // Open the new bank withdrawal component
+      setBankWithdrawOpen(true);
+    } else {
+      setMethod(methodKey);
+      setStep('details');
+    }
+  };
+
+  const handleBankWithdrawSuccess = () => {
+    setBankWithdrawOpen(false);
+    setStep('success');
+    setMethod('bank');
   };
 
   return (
@@ -150,7 +169,7 @@ const WithdrawPage = () => {
           {methodOptions.map(opt => (
             <button
               key={opt.key}
-              onClick={() => { setMethod(opt.key); setStep('details'); }}
+              onClick={() => handleMethodSelect(opt.key)}
               className="w-full flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary transition-colors text-left"
             >
               <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center shrink-0">
@@ -313,6 +332,16 @@ const WithdrawPage = () => {
           </p>
           <Button onClick={reset} variant="outline" className="w-full">Done</Button>
         </div>
+      )}
+
+      {/* Bank Withdrawal Dialog */}
+      {bankWithdrawOpen && (
+        <WithdrawToBankComponent
+          wallet={wallets.find(w => w.currency === 'NGN') || wallets[0]}
+          isOpen={bankWithdrawOpen}
+          onClose={() => setBankWithdrawOpen(false)}
+          onSuccess={handleBankWithdrawSuccess}
+        />
       )}
     </div>
   );
