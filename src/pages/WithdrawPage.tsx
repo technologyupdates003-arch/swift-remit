@@ -46,9 +46,13 @@ const WithdrawPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('wallets').select('*').eq('user_id', user.id).then(({ data }) => {
+    const fetchWallets = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (!userId) return;
+      const { data } = await supabase.from('wallets').select('*').eq('user_id', userId);
       setWallets(data || []);
-    });
+    };
+    fetchWallets();
   }, [user]);
 
   const wallet = wallets.find(w => w.id === selectedWallet);
