@@ -27,14 +27,25 @@ const KycPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('kyc_documents').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-      .then(({ data }) => { setDocs(data || []); setLoading(false); });
+    const load = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (userId) {
+        const { data } = await supabase.from('kyc_documents').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+        setDocs(data || []);
+      }
+      setLoading(false);
+    };
+    load();
   }, [user]);
 
   const handleUpload = async () => {
     if (!file || !docType || !user) return;
     setUploading(true);
-    const filePath = `${user.id}/${Date.now()}-${file.name}`;
+
+    const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+    if (!userId) { setUploading(false); return; }
+
+    const filePath = `${userId}/${Date.now()}-${file.name}`;
     const { error: uploadError } = await supabase.storage.from('kyc-documents').upload(filePath, file);
     if (uploadError) {
       toast({ title: 'Upload failed', variant: 'destructive' });
@@ -43,7 +54,7 @@ const KycPage = () => {
     }
     const { data: { publicUrl } } = supabase.storage.from('kyc-documents').getPublicUrl(filePath);
     const { error } = await supabase.from('kyc_documents').insert({
-      user_id: user.id,
+      user_id: userId,
       document_type: docType,
       file_url: publicUrl,
     });
@@ -54,8 +65,8 @@ const KycPage = () => {
       toast({ title: 'Document uploaded for review' });
       setFile(null);
       setDocType('');
-      supabase.from('kyc_documents').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-        .then(({ data }) => setDocs(data || []));
+      const { data } = await supabase.from('kyc_documents').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+      setDocs(data || []);
     }
   };
 

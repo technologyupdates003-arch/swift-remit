@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { intaSendService } from '@/lib/intasend';
 import {
   Dialog,
   DialogContent,
@@ -124,28 +123,23 @@ const MpesaWithdrawForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaWithdraw
 
       const transactionId = dbResult.transaction_id;
 
-      // Step 2: Initiate IntaSend B2C transfer
-      const b2cResult = await intaSendService.initiateB2C({
-        transactions: [{
-          name: recipientName.trim(),
-          account: phoneNumber,
+      // Step 2: Call IntaSend B2C Edge Function (secure server-side)
+      const { data: b2cResult, error: b2cError } = await supabase.functions.invoke('intasend-b2c-withdraw', {
+        body: {
+          phone_number: phoneNumber,
           amount: parseFloat(amount),
-          narrative: 'Swift Remit withdrawal'
-        }],
-        currency: 'KES',
-        requires_approval: 'NO'
+          wallet_id: wallet.id,
+          user_id: user.id,
+          narrative: 'AbanRemit withdrawal'
+        }
       });
+
+      if (b2cError) throw b2cError;
+      if (!b2cResult?.success) throw new Error(b2cResult?.error || 'B2C withdrawal failed');
 
       toast({
         title: 'Withdrawal Initiated',
         description: 'Your M-Pesa withdrawal is being processed',
-      });
-
-      // Step 3: Update transaction with IntaSend response
-      await (supabase.rpc as any)('update_intasend_transaction_status', {
-        p_transaction_id: transactionId,
-        p_status: 'completed',
-        p_intasend_response: b2cResult
       });
 
       setStep('success');

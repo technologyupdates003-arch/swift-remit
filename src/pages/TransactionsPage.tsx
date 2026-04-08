@@ -20,11 +20,17 @@ const TransactionsPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('transactions').select('*').or(`user_id.eq.${user.id},receiver_user_id.eq.${user.id}`)
-      .order('created_at', { ascending: false }).then(({ data }) => {
+    const load = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (userId) {
+        const { data } = await supabase.from('transactions').select('*')
+          .or(`user_id.eq.${userId},receiver_user_id.eq.${userId}`)
+          .order('created_at', { ascending: false });
         setTransactions(data || []);
-        setLoading(false);
-      });
+      }
+      setLoading(false);
+    };
+    load();
   }, [user]);
 
   const getIcon = (type: string) => {
