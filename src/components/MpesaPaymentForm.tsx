@@ -98,7 +98,7 @@ const MpesaPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaPaymentFo
 
     try {
       // Step 1: Create transaction record in database
-      const { data: dbResult, error: dbError } = await supabase.rpc('mpesa_fund_wallet', {
+      const { data: dbResultRaw, error: dbError } = await supabase.rpc('mpesa_fund_wallet', {
         wallet_id: wallet.id,
         phone_number: phoneNumber,
         amount: parseFloat(amount)
@@ -109,6 +109,7 @@ const MpesaPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaPaymentFo
         throw new Error(dbError.message || 'Failed to create transaction record');
       }
 
+      const dbResult = dbResultRaw as any;
       if (!dbResult || !dbResult.success) {
         throw new Error(dbResult?.error || 'Failed to create transaction record');
       }

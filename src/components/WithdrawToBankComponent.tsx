@@ -97,8 +97,8 @@ const WithdrawToBankComponent = ({ wallet, isOpen, onClose, onSuccess }: Withdra
 
         // Update bank account with recipient code
         await supabase
-          .from('bank_accounts')
-          .update({ paystack_recipient_code: recipientCode })
+          .from('bank_accounts' as any)
+          .update({ paystack_recipient_code: recipientCode } as any)
           .eq('id', selectedAccount.id);
       }
 

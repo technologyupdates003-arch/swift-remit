@@ -83,7 +83,7 @@ const WalletTransferForm = ({ wallet, isOpen, onClose, onSuccess }: WalletTransf
 
     try {
       // Call SQL function to process wallet transfer
-      const { data, error } = await supabase.rpc('intasend_wallet_transfer', {
+      const { data: dataRaw, error } = await supabase.rpc('intasend_wallet_transfer', {
         p_from_wallet_id: wallet.id,
         p_to_wallet_number: recipientWallet.toUpperCase(),
         p_amount: parseFloat(amount),
@@ -92,7 +92,8 @@ const WalletTransferForm = ({ wallet, isOpen, onClose, onSuccess }: WalletTransf
 
       if (error) throw error;
 
-      if (data.success) {
+      const data = dataRaw as any;
+      if (data?.success) {
         toast({
           title: 'Transfer Successful',
           description: `${getCurrencySymbol(wallet.currency)}${parseFloat(amount).toLocaleString()} sent to ${recipientWallet}`,
@@ -107,7 +108,7 @@ const WalletTransferForm = ({ wallet, isOpen, onClose, onSuccess }: WalletTransf
           resetForm();
         }, 3000);
       } else {
-        throw new Error(data.error);
+        throw new Error(data?.error || 'Transfer failed');
       }
     } catch (error: any) {
       toast({

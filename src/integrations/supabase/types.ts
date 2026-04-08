@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at: string
+          currency: string
+          id: string
+          is_default: boolean
+          is_verified: boolean
+          paystack_recipient_code: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          bank_code: string
+          bank_name: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          paystack_recipient_code?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          bank_code?: string
+          bank_name?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          is_default?: boolean
+          is_verified?: boolean
+          paystack_recipient_code?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      commission_config: {
+        Row: {
+          commission_rate: number
+          commission_type: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          id: string
+          is_active: boolean | null
+          max_commission: number | null
+          min_commission: number | null
+          service_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          commission_rate: number
+          commission_type: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean | null
+          max_commission?: number | null
+          min_commission?: number | null
+          service_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          commission_rate?: number
+          commission_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          id?: string
+          is_active?: boolean | null
+          max_commission?: number | null
+          min_commission?: number | null
+          service_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_config_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exchange_rates: {
         Row: {
           from_currency: string
@@ -37,6 +132,182 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      fee_config: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          fee_amount: number
+          fee_name: string
+          fee_type: string
+          id: string
+          is_active: boolean | null
+          max_amount: number | null
+          min_amount: number | null
+          service_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          fee_amount: number
+          fee_name: string
+          fee_type: string
+          id?: string
+          is_active?: boolean | null
+          max_amount?: number | null
+          min_amount?: number | null
+          service_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          fee_amount?: number
+          fee_name?: string
+          fee_type?: string
+          id?: string
+          is_active?: boolean | null
+          max_amount?: number | null
+          min_amount?: number | null
+          service_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_config_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_transactions: {
+        Row: {
+          commission_amount: number | null
+          created_at: string | null
+          currency: string
+          fee_amount: number
+          id: string
+          reference_id: string | null
+          service_description: string
+          service_type: string
+          status: string | null
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          commission_amount?: number | null
+          created_at?: string | null
+          currency: string
+          fee_amount: number
+          id?: string
+          reference_id?: string | null
+          service_description: string
+          service_type: string
+          status?: string | null
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          commission_amount?: number | null
+          created_at?: string | null
+          currency?: string
+          fee_amount?: number
+          id?: string
+          reference_id?: string | null
+          service_description?: string
+          service_type?: string
+          status?: string | null
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intasend_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          intasend_response: Json | null
+          intasend_transaction_id: string | null
+          narrative: string | null
+          phone_number: string | null
+          recipient_name: string | null
+          status: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          intasend_response?: Json | null
+          intasend_transaction_id?: string | null
+          narrative?: string | null
+          phone_number?: string | null
+          recipient_name?: string | null
+          status?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          intasend_response?: Json | null
+          intasend_transaction_id?: string | null
+          narrative?: string | null
+          phone_number?: string | null
+          recipient_name?: string | null
+          status?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intasend_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intasend_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kyc_documents: {
         Row: {
@@ -75,6 +346,63 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mpesa_requests: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          id: string
+          instructions: string | null
+          phone_number: string
+          request_id: string
+          status: string
+          updated_at: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          instructions?: string | null
+          phone_number: string
+          request_id: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          instructions?: string | null
+          phone_number?: string
+          request_id?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mpesa_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mpesa_requests_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
             referencedColumns: ["id"]
           },
         ]
@@ -144,6 +472,72 @@ export type Database = {
         }
         Relationships: []
       }
+      paystack_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          paystack_reference: string | null
+          paystack_response: Json | null
+          paystack_transaction_id: string | null
+          recipient_code: string | null
+          status: string
+          transaction_type: string
+          transfer_code: string | null
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          id?: string
+          paystack_reference?: string | null
+          paystack_response?: Json | null
+          paystack_transaction_id?: string | null
+          recipient_code?: string | null
+          status?: string
+          transaction_type: string
+          transfer_code?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          paystack_reference?: string | null
+          paystack_response?: Json | null
+          paystack_transaction_id?: string | null
+          recipient_code?: string | null
+          status?: string
+          transaction_type?: string
+          transfer_code?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paystack_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paystack_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -173,6 +567,113 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      sms_log: {
+        Row: {
+          cost: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          message: string
+          phone_number: string
+          reference_id: string | null
+          sms_type: string
+          status: string | null
+          talksasa_response: Json | null
+          user_id: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          message: string
+          phone_number: string
+          reference_id?: string | null
+          sms_type: string
+          status?: string | null
+          talksasa_response?: Json | null
+          user_id: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          message?: string
+          phone_number?: string
+          reference_id?: string | null
+          sms_type?: string
+          status?: string | null
+          talksasa_response?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      statement_downloads: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          date_from: string
+          date_to: string
+          download_count: number | null
+          fee_charged: number
+          file_path: string | null
+          id: string
+          statement_type: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          date_from: string
+          date_to: string
+          download_count?: number | null
+          fee_charged: number
+          file_path?: string | null
+          id?: string
+          statement_type: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          date_from?: string
+          date_to?: string
+          download_count?: number | null
+          fee_charged?: number
+          file_path?: string | null
+          id?: string
+          statement_type?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "statement_downloads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "statement_downloads_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
@@ -400,13 +901,178 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_service_fee: {
+        Args: { p_amount: number; p_currency?: string; p_service_type: string }
+        Returns: Json
+      }
+      charge_service_fee:
+        | {
+            Args: {
+              p_amount: number
+              p_currency?: string
+              p_reference_id?: string
+              p_service_description: string
+              p_service_type: string
+              p_user_id: string
+              p_wallet_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_amount: number
+              p_currency?: string
+              p_reference_id?: string
+              p_service_description: string
+              p_service_type: string
+              p_user_id: string
+              p_wallet_id: string
+            }
+            Returns: Json
+          }
+      complete_mpesa_payment: {
+        Args: { mpesa_transaction_id?: string; request_id: string }
+        Returns: Json
+      }
+      exchange_currency_with_fees: {
+        Args: {
+          p_exchange_rate: number
+          p_from_amount: number
+          p_from_wallet_id: string
+          p_pin_hash: string
+          p_to_wallet_id: string
+        }
+        Returns: Json
+      }
+      generate_statement_with_fee: {
+        Args: {
+          p_date_from: string
+          p_date_to: string
+          p_statement_type: string
+          p_user_id: string
+          p_wallet_id: string
+        }
+        Returns: Json
+      }
       get_user_id_from_auth: { Args: never; Returns: string }
+      get_user_mpesa_requests: {
+        Args: never
+        Returns: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          instructions: string
+          phone_number: string
+          request_id: string
+          status: string
+        }[]
+      }
+      get_user_wallets: {
+        Args: never
+        Returns: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          type: string
+          wallet_number: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      intasend_mpesa_fund_wallet: {
+        Args: { amount: number; phone_number: string; wallet_id: string }
+        Returns: Json
+      }
+      intasend_mpesa_withdraw: {
+        Args: {
+          p_amount: number
+          p_phone_number: string
+          p_recipient_name: string
+          p_wallet_id: string
+        }
+        Returns: Json
+      }
+      intasend_wallet_transfer: {
+        Args: {
+          p_amount: number
+          p_from_wallet_id: string
+          p_narrative?: string
+          p_to_wallet_number: string
+        }
+        Returns: Json
+      }
+      mpesa_fund_wallet: {
+        Args: { amount: number; phone_number: string; wallet_id: string }
+        Returns: Json
+      }
+      mpesa_fund_wallet_sql_only: {
+        Args: { amount: number; phone_number: string; wallet_id: string }
+        Returns: Json
+      }
+      paystack_complete_bank_withdrawal: {
+        Args: {
+          p_paystack_response: Json
+          p_reference: string
+          p_transfer_code: string
+        }
+        Returns: Json
+      }
+      paystack_complete_card_funding: {
+        Args: { p_paystack_response: Json; p_reference: string }
+        Returns: Json
+      }
+      paystack_handle_failed_transaction: {
+        Args: { p_error_message: string; p_reference: string }
+        Returns: Json
+      }
+      paystack_initiate_bank_withdrawal: {
+        Args: {
+          p_amount: number
+          p_recipient_code: string
+          p_reference: string
+          p_wallet_id: string
+        }
+        Returns: Json
+      }
+      paystack_initiate_card_funding: {
+        Args: { p_amount: number; p_reference: string; p_wallet_id: string }
+        Returns: Json
+      }
+      send_sms_with_fee: {
+        Args: {
+          p_message: string
+          p_phone_number: string
+          p_reference_id?: string
+          p_sms_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      transfer_with_fees_and_sms: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_from_wallet_id: string
+          p_pin_hash: string
+          p_to_wallet_id: string
+        }
+        Returns: Json
+      }
+      update_intasend_transaction_status: {
+        Args: {
+          p_intasend_response?: Json
+          p_status: string
+          p_transaction_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
