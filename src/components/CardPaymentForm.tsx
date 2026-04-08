@@ -153,7 +153,7 @@ const CardPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: CardPaymentForm
       const reference = paystackService.generateReference('CARD');
       
       // Step 1: Create transaction record in database
-      const { data: dbResult, error: dbError } = await supabase.rpc('paystack_initiate_card_funding', {
+      const { data: dbResultRaw, error: dbError } = await supabase.rpc('paystack_initiate_card_funding', {
         p_wallet_id: wallet.id,
         p_amount: parseFloat(amount),
         p_reference: reference
@@ -161,8 +161,9 @@ const CardPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: CardPaymentForm
 
       if (dbError) throw dbError;
 
-      if (!dbResult.success) {
-        throw new Error(dbResult.error);
+      const dbResult = dbResultRaw as any;
+      if (!dbResult?.success) {
+        throw new Error(dbResult?.error || 'Failed to initiate card funding');
       }
 
       // Step 2: Initialize payment with Paystack
@@ -209,7 +210,7 @@ const CardPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: CardPaymentForm
             
             if (verificationResult.status && verificationResult.data.status === 'success') {
               // Step 5: Complete funding in database
-              await supabase.rpc('paystack_complete_card_funding', {
+              await (supabase.rpc as any)('paystack_complete_card_funding', {
                 p_reference: response.reference,
                 p_paystack_response: verificationResult.data
               });
@@ -226,7 +227,7 @@ const CardPaymentForm = ({ wallet, isOpen, onClose, onSuccess }: CardPaymentForm
             }
           } catch (error: any) {
             // Handle failed payment
-            await supabase.rpc('paystack_handle_failed_transaction', {
+            await (supabase.rpc as any)('paystack_handle_failed_transaction', {
               p_reference: response.reference,
               p_error_message: error.message
             });

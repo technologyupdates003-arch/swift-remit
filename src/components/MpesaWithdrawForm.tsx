@@ -108,7 +108,7 @@ const MpesaWithdrawForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaWithdraw
 
     try {
       // Step 1: Process withdrawal in database (deducts balance)
-      const { data: dbResult, error: dbError } = await supabase.rpc('intasend_mpesa_withdraw', {
+      const { data: dbResultRaw, error: dbError } = await supabase.rpc('intasend_mpesa_withdraw', {
         p_wallet_id: wallet.id,
         p_phone_number: phoneNumber,
         p_amount: parseFloat(amount),
@@ -117,8 +117,9 @@ const MpesaWithdrawForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaWithdraw
 
       if (dbError) throw dbError;
 
-      if (!dbResult.success) {
-        throw new Error(dbResult.error);
+      const dbResult = dbResultRaw as any;
+      if (!dbResult?.success) {
+        throw new Error(dbResult?.error || 'Withdrawal failed');
       }
 
       const transactionId = dbResult.transaction_id;
@@ -141,7 +142,7 @@ const MpesaWithdrawForm = ({ wallet, isOpen, onClose, onSuccess }: MpesaWithdraw
       });
 
       // Step 3: Update transaction with IntaSend response
-      await supabase.rpc('update_intasend_transaction_status', {
+      await (supabase.rpc as any)('update_intasend_transaction_status', {
         p_transaction_id: transactionId,
         p_status: 'completed',
         p_intasend_response: b2cResult
