@@ -55,6 +55,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${microserviceKey}`,
         },
         body: JSON.stringify({
+          api_ref: payload.api_ref,
           external_user_id: payload.external_user_id,
           external_wallet_id: payload.external_wallet_id,
           phone_number: payload.phone_number,
