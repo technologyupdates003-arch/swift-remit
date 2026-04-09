@@ -407,6 +407,59 @@ export type Database = {
           },
         ]
       }
+      mpesa_stk_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          intasend_payload: Json | null
+          intasend_response: Json | null
+          phone_number: string
+          reference_code: string
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          intasend_payload?: Json | null
+          intasend_response?: Json | null
+          phone_number: string
+          reference_code: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          intasend_payload?: Json | null
+          intasend_response?: Json | null
+          phone_number?: string
+          reference_code?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mpesa_stk_requests_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -469,6 +522,54 @@ export type Database = {
           phone?: string
           purpose?: string
           verified?: boolean
+        }
+        Relationships: []
+      }
+      payment_logs: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          payment_type: string
+          provider_reference: string | null
+          provider_response: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+          webhook_data: Json | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_type: string
+          provider_reference?: string | null
+          provider_response?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+          webhook_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_type?: string
+          provider_reference?: string | null
+          provider_response?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+          webhook_data?: Json | null
         }
         Relationships: []
       }
@@ -934,6 +1035,10 @@ export type Database = {
         Args: { mpesa_transaction_id?: string; request_id: string }
         Returns: Json
       }
+      complete_mpesa_stk_push: {
+        Args: { p_mpesa_receipt?: string; p_reference_code: string }
+        Returns: Json
+      }
       exchange_currency_with_fees: {
         Args: {
           p_exchange_rate: number
@@ -980,6 +1085,10 @@ export type Database = {
           wallet_number: string
         }[]
       }
+      handle_payment_webhook: {
+        Args: { p_api_ref: string; p_state: string; p_webhook_data?: Json }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -988,7 +1097,7 @@ export type Database = {
         Returns: boolean
       }
       intasend_mpesa_fund_wallet: {
-        Args: { amount: number; phone_number: string; wallet_id: string }
+        Args: { p_amount: number; p_phone_number: string; p_wallet_id: string }
         Returns: Json
       }
       intasend_mpesa_withdraw: {
@@ -1015,6 +1124,10 @@ export type Database = {
       }
       mpesa_fund_wallet_sql_only: {
         Args: { amount: number; phone_number: string; wallet_id: string }
+        Returns: Json
+      }
+      mpesa_stk_push_sql_only: {
+        Args: { p_amount: number; p_phone_number: string; p_wallet_id: string }
         Returns: Json
       }
       paystack_complete_bank_withdrawal: {
