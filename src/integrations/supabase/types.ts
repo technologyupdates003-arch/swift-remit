@@ -532,6 +532,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          metadata: Json
           payment_type: string
           provider_reference: string | null
           provider_response: Json | null
@@ -547,6 +548,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          metadata?: Json
           payment_type: string
           provider_reference?: string | null
           provider_response?: Json | null
@@ -562,6 +564,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          metadata?: Json
           payment_type?: string
           provider_reference?: string | null
           provider_response?: Json | null
@@ -1002,6 +1005,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_legacy_intasend_payment_logs: { Args: never; Returns: number }
       calculate_service_fee: {
         Args: { p_amount: number; p_currency?: string; p_service_type: string }
         Returns: Json
@@ -1087,6 +1091,15 @@ export type Database = {
       }
       handle_payment_webhook: {
         Args: { p_api_ref: string; p_state: string; p_webhook_data?: Json }
+        Returns: Json
+      }
+      handle_wallet_transfer: {
+        Args: {
+          p_amount: number
+          p_receiver_wallet_id: string
+          p_reference?: string
+          p_sender_wallet_id: string
+        }
         Returns: Json
       }
       has_role: {
