@@ -525,6 +525,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_logs: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          payment_type: string
+          provider_reference: string | null
+          provider_response: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+          webhook_data: Json | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_type: string
+          provider_reference?: string | null
+          provider_response?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+          webhook_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          payment_type?: string
+          provider_reference?: string | null
+          provider_response?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+          webhook_data?: Json | null
+        }
+        Relationships: []
+      }
       paystack_transactions: {
         Row: {
           amount: number
@@ -1036,6 +1084,10 @@ export type Database = {
           type: string
           wallet_number: string
         }[]
+      }
+      handle_payment_webhook: {
+        Args: { p_api_ref: string; p_state: string; p_webhook_data?: Json }
+        Returns: Json
       }
       has_role: {
         Args: {
