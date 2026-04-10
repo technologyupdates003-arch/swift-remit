@@ -181,13 +181,11 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const microserviceUrl = Deno.env.get('PAYMENT_MICROSERVICE_URL');
-    const microserviceKey = Deno.env.get('PAYMENT_MICROSERVICE_KEY');
     const normalizedStatus = normalizeStatus(webhookInfo.status);
     const isCompleted = ['completed', 'success', 'successful', 'complete'].includes(normalizedStatus);
     const isFailed = ['failed', 'cancelled', 'canceled', 'timeout', 'expired'].includes(normalizedStatus);
 
-    if (microserviceUrl && microserviceKey && paymentLog) {
+    if (paymentLog) {
       const currency = paymentLog.currency || 'KES';
       const currencySymbol = currency === 'KES' ? 'KSh' : currency;
       const phoneNumber =
@@ -195,6 +193,7 @@ serve(async (req) => {
         paymentLog.metadata?.phone_number ||
         paymentLog.metadata?.receiver_phone_number ||
         null;
+      const userId = paymentLog.metadata?.user_id || null;
 
       if (isCompleted && processResult?.success) {
         const amount = processResult.amount_added ?? paymentLog.amount ?? webhookInfo.amount ?? 0;
@@ -206,10 +205,9 @@ serve(async (req) => {
           wallet_transfer: `Wallet transfer successful! ${currencySymbol}${paymentLog.amount} has been processed. Ref: ${webhookInfo.reference}`,
         };
 
-        await sendSms({
-          microserviceUrl,
-          microserviceKey,
+        await sendSms(supabase, {
           phoneNumber,
+          userId,
           message:
             messageByType[paymentLog.payment_type] ||
             `Transaction successful! Ref: ${webhookInfo.reference}`,
@@ -217,10 +215,9 @@ serve(async (req) => {
       }
 
       if (isFailed) {
-        await sendSms({
-          microserviceUrl,
-          microserviceKey,
+        await sendSms(supabase, {
           phoneNumber,
+          userId,
           message: `Transaction failed. ${currencySymbol}${paymentLog.amount} could not be completed. Ref: ${webhookInfo.reference}`,
         });
       }
