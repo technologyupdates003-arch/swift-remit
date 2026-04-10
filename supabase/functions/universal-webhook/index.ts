@@ -104,27 +104,32 @@ const extractWebhookInfo = (provider: Provider, payload: Record<string, any>) =>
   }
 };
 
-const sendSms = async (payload: {
-  microserviceUrl: string;
-  microserviceKey: string;
+const sendSms = async (supabaseClient: any, payload: {
   phoneNumber?: string | null;
   message: string;
+  userId?: string | null;
 }) => {
   if (!payload.phoneNumber) return;
 
-  await fetch(`${payload.microserviceUrl}/talksasa-integration`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${payload.microserviceKey}`,
-    },
-    body: JSON.stringify({
-      action: 'send_sms',
-      phone_number: payload.phoneNumber,
-      message: payload.message,
-      sender_id: 'ABAN_COOL',
-    }),
-  });
+  try {
+    const smsUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-sms-notification`;
+    await fetch(smsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      },
+      body: JSON.stringify({
+        phone_number: payload.phoneNumber,
+        message: payload.message,
+        sms_type: 'transaction',
+        user_id: payload.userId,
+        charge_fee: false,
+      }),
+    });
+  } catch (err) {
+    console.error('SMS send error:', err);
+  }
 };
 
 serve(async (req) => {
