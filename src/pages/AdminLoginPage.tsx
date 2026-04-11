@@ -31,8 +31,15 @@ const AdminLoginPage = () => {
     }
 
     // Verify admin role via server-side function
+    const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+    if (!userId) {
+      await supabase.auth.signOut();
+      toast({ title: 'Access denied', description: 'User profile not found', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
     const { data: hasAdmin } = await supabase.rpc('has_role', {
-      _user_id: (await supabase.rpc('get_user_id_from_auth')) as string,
+      _user_id: userId,
       _role: 'admin',
     });
 
