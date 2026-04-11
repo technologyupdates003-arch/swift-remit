@@ -3,11 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Wallet, ArrowRightLeft, Shield, UserCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, Wallet, ArrowRightLeft, Shield, UserCheck, ShieldAlert } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [stats, setStats] = useState({ users: 0, wallets: 0, transactions: 0, pendingKyc: 0 });
   const [wallets, setWallets] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -15,7 +18,19 @@ const AdminDashboard = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [tab, setTab] = useState<'overview' | 'users' | 'wallets' | 'transactions' | 'kyc'>('overview');
 
+  // Server-side admin check using has_role function
   useEffect(() => {
+    const verifyAdmin = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (!userId) { setIsAdmin(false); return; }
+      const { data } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      setIsAdmin(!!data);
+    };
+    verifyAdmin();
+  }, []);
+
+  useEffect(() => {
+    if (isAdmin !== true) return;
     const fetchData = async () => {
       const [usersRes, walletsRes, txRes, kycRes] = await Promise.all([
         supabase.from('users').select('*'),
@@ -37,7 +52,7 @@ const AdminDashboard = () => {
       setKycDocs(kycData);
     };
     fetchData();
-  }, []);
+  }, [isAdmin]);
 
   const updateKyc = async (id: string, status: 'approved' | 'rejected') => {
     const { error } = await supabase.from('kyc_documents').update({ status }).eq('id', id);
@@ -50,6 +65,23 @@ const AdminDashboard = () => {
     }
   };
 
+  if (isAdmin === null) {
+    return <div className="flex min-h-[50vh] items-center justify-center text-muted-foreground">Verifying admin access...</div>;
+  }
+
+  if (isAdmin === false) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+        <ShieldAlert className="w-16 h-16 text-destructive" />
+        <h2 className="text-xl font-bold text-foreground">Access Denied</h2>
+        <p className="text-muted-foreground text-center max-w-md">
+          You do not have admin privileges. This incident has been logged.
+        </p>
+        <Button onClick={() => navigate('/')} variant="outline">Return to Dashboard</Button>
+      </div>
+    );
+  }
+
   const tabs = [
     { key: 'overview', label: 'Overview', icon: Users },
     { key: 'users', label: 'Users', icon: UserCheck },
@@ -59,14 +91,10 @@ const AdminDashboard = () => {
   ] as const;
 
   const balanceByCurrency: Record<string, number> = {};
-  wallets.forEach(w => {
-    balanceByCurrency[w.currency] = (balanceByCurrency[w.currency] || 0) + Number(w.balance);
-  });
+  wallets.forEach(w => { balanceByCurrency[w.currency] = (balanceByCurrency[w.currency] || 0) + Number(w.balance); });
 
   const txByStatus: Record<string, number> = {};
-  transactions.forEach(tx => {
-    txByStatus[tx.status] = (txByStatus[tx.status] || 0) + 1;
-  });
+  transactions.forEach(tx => { txByStatus[tx.status] = (txByStatus[tx.status] || 0) + 1; });
 
   return (
     <div className="space-y-6">
@@ -104,33 +132,27 @@ const AdminDashboard = () => {
               </div>
             ))}
           </div>
-
           <div className="border border-border rounded-xl p-5 bg-card">
             <p className="font-medium text-foreground mb-3">System Totals by Currency</p>
             {Object.keys(balanceByCurrency).length === 0 ? (
               <p className="text-sm text-muted-foreground">No wallets yet</p>
-            ) : (
-              Object.entries(balanceByCurrency).map(([cur, bal]) => (
-                <div key={cur} className="flex justify-between py-1 text-sm">
-                  <span className="text-muted-foreground">{cur}</span>
-                  <span className="font-medium text-foreground">{Number(bal).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
-                </div>
-              ))
-            )}
+            ) : Object.entries(balanceByCurrency).map(([cur, bal]) => (
+              <div key={cur} className="flex justify-between py-1 text-sm">
+                <span className="text-muted-foreground">{cur}</span>
+                <span className="font-medium text-foreground">{Number(bal).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
+              </div>
+            ))}
           </div>
-
           <div className="border border-border rounded-xl p-5 bg-card">
             <p className="font-medium text-foreground mb-3">Transaction Status Breakdown</p>
             {Object.keys(txByStatus).length === 0 ? (
               <p className="text-sm text-muted-foreground">No transactions yet</p>
-            ) : (
-              Object.entries(txByStatus).map(([status, count]) => (
-                <div key={status} className="flex justify-between py-1 text-sm">
-                  <span className="text-muted-foreground capitalize">{status}</span>
-                  <span className="font-medium text-foreground">{count}</span>
-                </div>
-              ))
-            )}
+            ) : Object.entries(txByStatus).map(([status, count]) => (
+              <div key={status} className="flex justify-between py-1 text-sm">
+                <span className="text-muted-foreground capitalize">{status}</span>
+                <span className="font-medium text-foreground">{count}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -146,15 +168,11 @@ const AdminDashboard = () => {
                   <p className="text-sm font-medium text-foreground">{u.full_name || 'No name'}</p>
                   <p className="text-xs text-muted-foreground">{u.email || u.phone || 'No contact'}</p>
                 </div>
-                <div className="text-right">
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    u.kyc_status === 'approved' ? 'bg-primary/20 text-primary' :
-                    u.kyc_status === 'pending' ? 'bg-warning/20 text-warning' :
-                    'bg-muted text-muted-foreground'
-                  }`}>
-                    KYC: {u.kyc_status}
-                  </span>
-                </div>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                  u.kyc_status === 'approved' ? 'bg-primary/20 text-primary' :
+                  u.kyc_status === 'pending' ? 'bg-warning/20 text-warning' :
+                  'bg-muted text-muted-foreground'
+                }`}>KYC: {u.kyc_status}</span>
               </div>
               <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
                 <span>PIN: {u.pin_hash ? '✓ Set' : '✗ Not set'}</span>
@@ -222,9 +240,7 @@ const AdminDashboard = () => {
                   doc.status === 'approved' ? 'bg-primary/20 text-primary' :
                   doc.status === 'rejected' ? 'bg-destructive/20 text-destructive' :
                   'bg-warning/20 text-warning'
-                }`}>
-                  {doc.status}
-                </span>
+                }`}>{doc.status}</span>
               </div>
               <p className="text-xs text-muted-foreground">User: {doc.user_id.slice(0, 8)}...</p>
               <p className="text-xs text-muted-foreground">{new Date(doc.created_at).toLocaleString()}</p>
