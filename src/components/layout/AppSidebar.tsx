@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, ArrowUpFromLine, Banknote
+  LayoutDashboard, Wallet, Send, Clock, Globe, Bitcoin, Shield, Bell, Settings, LogOut, X, ArrowUpFromLine, Banknote, ShieldCheck
 } from 'lucide-react';
 
 const navItems = [
@@ -27,6 +28,17 @@ const AppSidebar = ({ open, onClose }: AppSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: userId } = await supabase.rpc('get_user_id_from_auth');
+      if (!userId) return;
+      const { data } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, []);
 
   const handleNav = (path: string) => {
     navigate(path);
@@ -71,6 +83,20 @@ const AppSidebar = ({ open, onClose }: AppSidebarProps) => {
               </button>
             );
           })}
+
+          {isAdmin && (
+            <button
+              onClick={() => handleNav('/admin')}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors mt-2 ${
+                location.pathname === '/admin'
+                  ? 'bg-destructive text-destructive-foreground'
+                  : 'text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive'
+              }`}
+            >
+              <ShieldCheck className="w-5 h-5" />
+              Admin Panel
+            </button>
+          )}
         </nav>
 
         <div className="p-3 mt-auto">

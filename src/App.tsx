@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import AdminLoginPage from "@/pages/AdminLoginPage";
 import Dashboard from "@/pages/Dashboard";
 import WalletsPage from "@/pages/WalletsPage";
 import SendMoneyPage from "@/pages/SendMoneyPage";
@@ -42,6 +43,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
     <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+    <Route path="/admin-login" element={<AdminLoginPage />} />
     <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccessPage /></ProtectedRoute>} />
     <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
       <Route index element={<Dashboard />} />
